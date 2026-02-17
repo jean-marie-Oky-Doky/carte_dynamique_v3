@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+    <head>
+        <meta name="author" content="Oky-Doky">
+        <meta charset="UTF-8">
+        <title>Carte dynamique des appels SAMU</title>
+
+        <!-- Lien vers Leaflet CSS -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+        <!-- Lien vers CSS -->
+        <link rel="stylesheet" href="css/style.css">
+    </head>
+
+    <body>
+
+    <!-- MENU HAUT -->
+    <header id="top-menu">
+        <div class="menu-section">
+            <label>Fond de carte :</label>
+            <select id="mapSelector">
+                <option value="osm">OpenStreetMap</option>
+                <option value="cartoLight">Carto Light</option>
+                <option value="cartoDark">Carto Dark</option>
+                <option value="stadiamapsDark" selected>Stadia Dark</option>
+            </select>
+        
+            <label>Gravité :</label>
+            <select id="filtreGravite">
+                <option value="all" selected>Toutes</option>
+                <option value="avc">AVC</option>
+                <option value="pediatrique">Pédiatrique</option>
+                <option value="blessure">Blessure</option>
+                <option value="brulure">Brûlure</option>
+                <option value="cardiaque">Cardiaque</option>
+                <option value="catastrophe">Catastrophe</option>
+                <option value="enceinte">Enceinte</option>
+                <option value="fracture">Fracture</option>
+                <option value="multiples">Multiples</option>
+                <option value="poison">Poison</option>
+                <option value="psycho">Psycho</option>
+                <option value="respiratoire">Respiratoire</option>
+                <option value="medical">Médical</option>
+            </select>
+            <label>Score :</label>
+            <select id="filtreScore">
+                <option value="aucun" selected>Aucun</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+
+        </div>
+</header>
+
+
+    <!-- CARTE -->
+    <div id="map"></div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+    <script src="js/map.js"></script>
+
+</body>
+
+
+</html>
