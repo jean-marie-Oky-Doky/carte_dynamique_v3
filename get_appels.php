@@ -1,12 +1,9 @@
 <?php
-$pdo = new PDO(
-    "mysql:host=localhost;dbname=Appel;charset=utf8",
-    "root",
-    ""
-);
 
-$query = $pdo->query("SELECT * FROM Liste_appel");
-$appels = $query->fetchAll(PDO::FETCH_ASSOC);
+http_response_code(410);
+header('Content-Type: application/json; charset=utf-8');
 
-header('Content-Type: application/json');
-echo json_encode($appels);
+echo json_encode([
+    'error' => 'Deprecated endpoint',
+    'message' => 'Use GET /api/get-appels instead.',
+], JSON_UNESCAPED_UNICODE);

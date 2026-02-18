@@ -5,5 +5,5 @@ header('Content-Type: application/json; charset=utf-8');
 
 echo json_encode([
     'error' => 'Deprecated endpoint',
-    'message' => 'Use POST /api/geocode instead.',
+    'message' => 'This project now uses Vercel Node.js serverless functions under /api.',
 ], JSON_UNESCAPED_UNICODE);
