@@ -1,12 +1,22 @@
 <?php
-$pdo = new PDO(
-    "mysql:host=localhost;dbname=Appel;charset=utf8",
-    "root",
-    ""
-);
 
-$query = $pdo->query("SELECT * FROM Liste_appel");
-$appels = $query->fetchAll(PDO::FETCH_ASSOC);
+declare(strict_types=1);
 
-header('Content-Type: application/json');
-echo json_encode($appels);
+require_once __DIR__ . '/db.php';
+
+header('Content-Type: application/json; charset=utf-8');
+
+try {
+    $pdo = getDatabaseConnection();
+
+    $query = $pdo->query('SELECT id, adresse, gravite, score, latitude, longitude FROM liste_appel ORDER BY id');
+    $appels = $query->fetchAll();
+
+    echo json_encode($appels, JSON_UNESCAPED_UNICODE);
+} catch (Throwable $e) {
+    http_response_code(500);
+    echo json_encode([
+        'error' => 'Database query failed.',
+        'details' => $e->getMessage(),
+    ], JSON_UNESCAPED_UNICODE);
+}

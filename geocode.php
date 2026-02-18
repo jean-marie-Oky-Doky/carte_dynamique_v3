@@ -1,75 +1,68 @@
 <?php
 
-/**************************************************
- * CONNEXION À LA BASE DE DONNÉES
- **************************************************/
-$pdo = new PDO(
-    "mysql:host=localhost;dbname=Appel;charset=utf8",
-    "root",
-    ""
-);
+declare(strict_types=1);
 
-/**************************************************
- * RÉCUPÉRATION DES ADRESSES NON GÉOCODÉES
- * (on évite de recalculer celles déjà traitées)
- **************************************************/
-$sql = "SELECT id, adresse 
-        FROM Liste_appel 
-        WHERE latitude IS NULL 
-           OR longitude IS NULL";
+require_once __DIR__ . '/db.php';
 
-$query = $pdo->query($sql);
-$appels = $query->fetchAll(PDO::FETCH_ASSOC);
+header('Content-Type: application/json; charset=utf-8');
 
-/**************************************************
- * BOUCLE SUR CHAQUE ADRESSE
- **************************************************/
-foreach ($appels as $appel) {
+try {
+    $pdo = getDatabaseConnection();
 
-    // Encodage de l’adresse pour l’URL
-    $adresse = urlencode($appel['adresse']);
+    $sql = 'SELECT id, adresse FROM liste_appel WHERE latitude IS NULL OR longitude IS NULL';
+    $query = $pdo->query($sql);
+    $appels = $query->fetchAll();
 
-    // Appel à l’API Nominatim (OpenStreetMap)
-    $url = "https://nominatim.openstreetmap.org/search?format=json&q=$adresse";
+    $updated = 0;
 
-    // User-Agent obligatoire pour Nominatim
-    $opts = [
-        "http" => [
-            "header" => "User-Agent: Projet-Appel/1.0\r\n"
-        ]
-    ];
+    foreach ($appels as $appel) {
+        $adresse = urlencode((string) $appel['adresse']);
+        $url = "https://nominatim.openstreetmap.org/search?format=json&q={$adresse}";
 
-    // Création du contexte HTTP
-    $context = stream_context_create($opts);
+        $opts = [
+            'http' => [
+                'header' => "User-Agent: Projet-Appel/1.0\r\n",
+            ],
+        ];
 
-    // Appel HTTP vers l’API
-    $json = file_get_contents($url, false, $context);
+        $context = stream_context_create($opts);
+        $json = file_get_contents($url, false, $context);
 
-    // Conversion JSON → tableau PHP
-    $data = json_decode($json, true);
+        if ($json === false) {
+            continue;
+        }
 
-    /**************************************************
-     * SI UNE COORDONNÉE EST TROUVÉE
-     **************************************************/
-    if (!empty($data)) {
+        $data = json_decode($json, true);
 
-        // Latitude / longitude du premier résultat
-        $lat = $data[0]['lat'];
-        $lon = $data[0]['lon'];
+        if (!empty($data)) {
+            $lat = $data[0]['lat'];
+            $lon = $data[0]['lon'];
 
-        // Mise à jour en base
-        $update = $pdo->prepare(
-            "UPDATE Liste_appel 
-             SET latitude = ?, longitude = ? 
-             WHERE id = ?"
-        );
+            $update = $pdo->prepare(
+                'UPDATE liste_appel SET latitude = :latitude, longitude = :longitude WHERE id = :id'
+            );
 
-        $update->execute([$lat, $lon, $appel['id']]);
+            $update->execute([
+                'latitude' => $lat,
+                'longitude' => $lon,
+                'id' => $appel['id'],
+            ]);
+
+            $updated++;
+        }
+
+        sleep(1);
     }
 
-    /**************************************************
-     * PAUSE OBLIGATOIRE
-     * (respect des règles de Nominatim)
-     **************************************************/
-    sleep(1);
+    echo json_encode([
+        'status' => 'ok',
+        'processed' => count($appels),
+        'updated' => $updated,
+    ], JSON_UNESCAPED_UNICODE);
+} catch (Throwable $e) {
+    http_response_code(500);
+    echo json_encode([
+        'error' => 'Geocoding process failed.',
+        'details' => $e->getMessage(),
+    ], JSON_UNESCAPED_UNICODE);
 }
