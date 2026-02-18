@@ -139,7 +139,7 @@ function getIconByScore(score) {
 /**************************************************
 * HEATMAP DES APPELS
 **************************************************/
-fetch('get_appels.php')
+fetch('/api/get-appels')
 .then(response => response.json())
 .then(appels => {
 
@@ -179,7 +179,7 @@ fetch('get_appels.php')
 /**************************************************
  * RÉCUPÉRATION DES APPELS DEPUIS L’API PHP
  **************************************************/
-// fetch('get_appels.php')
+// fetch('/api/get-appels')
 // .then(response => response.json())
 // .then(appels => {
 
